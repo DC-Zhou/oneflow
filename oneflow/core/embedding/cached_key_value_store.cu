@@ -95,6 +95,10 @@ class CacheKeyValueStoreImpl : public KeyValueStore {
   void Put(ep::Stream* stream, uint32_t num_keys, const void* keys, const void* values) override;
   void FusedHalfUpdatePut(ep::Stream* stream, uint32_t n_keys, const void* keys, const void* values,
                           const void* update, const float* lr, float scale) override;
+  bool IsFusionSupported() override {
+    return cache_->Policy() == CacheOptions::Policy::kFull
+           && cache_->ValueType() == DataType::kFloat;
+  }
   bool SnapshotExists(const std::string& name) override;
   void LoadSnapshot(const std::string& name) override;
   void SaveSnapshot(const std::string& name) override;
@@ -212,7 +216,7 @@ void CacheKeyValueStoreImpl<Key, Elem>::LoadSnapshot(
   CHECK_GT(max_query_length_, 0);
   cache_->Clear();
   auto device =
-      Global<ep::DeviceManagerRegistry>::Get()->GetDevice(DeviceType::kCUDA, device_index_);
+      Singleton<ep::DeviceManagerRegistry>::Get()->GetDevice(DeviceType::kCUDA, device_index_);
   CHECK(device);
   auto* stream = device->CreateStream();
   store_->LoadSnapshot(name, [&](KVIterator* iter) {
@@ -255,7 +259,7 @@ void CacheKeyValueStoreImpl<Key, Elem>::SyncCacheToStore() {
   if (synced_) { return; }
   CudaCurrentDeviceGuard guard(device_index_);
   auto device =
-      Global<ep::DeviceManagerRegistry>::Get()->GetDevice(DeviceType::kCUDA, device_index_);
+      Singleton<ep::DeviceManagerRegistry>::Get()->GetDevice(DeviceType::kCUDA, device_index_);
   CHECK(device);
   auto* stream = device->CreateStream();
   auto* cuda_stream = stream->As<ep::CudaStream>();

@@ -47,6 +47,7 @@ class KeyValueStore {
                                   float scale) {
     UNIMPLEMENTED();
   }
+  virtual bool IsFusionSupported() { return false; }
   virtual bool SnapshotExists(const std::string& name) = 0;
   virtual void LoadSnapshot(const std::string& name) = 0;
   virtual void LoadSnapshot(const std::string& name,
