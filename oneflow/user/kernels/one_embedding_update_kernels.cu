@@ -209,12 +209,13 @@ void GetUniqueValueAndUpdatedPtr(user_op::KernelComputeContext* ctx, const int64
                                  const T** unique_embeddings_ptr,
                                  T** updated_unique_embeddings_ptr) {
   if (embedding::UseDynamicMemoryAllocation()) {
-    embedding::ValuesPtr* ptrs = Global<embedding::EmbeddingManager>::Get()->GetValuesPtr(
+    embedding::ValuesPtr* ptrs = Singleton<embedding::EmbeddingManager>::Get()->GetValuesPtr(
         ctx->Attr<std::string>("embedding_name"), ctx->parallel_ctx().parallel_id());
     const int64_t line_size = ctx->Attr<int64_t>("line_size");
     uint32_t num_unique;
-    embedding::NumUniques* num_uniques = Global<embedding::EmbeddingManager>::Get()->GetNumUniques(
-        ctx->Attr<std::string>("embedding_name"), ctx->parallel_ctx().parallel_id());
+    embedding::NumUniques* num_uniques =
+        Singleton<embedding::EmbeddingManager>::Get()->GetNumUniques(
+            ctx->Attr<std::string>("embedding_name"), ctx->parallel_ctx().parallel_id());
     num_unique = num_uniques->GetNumUnique(current_iter);
     void* updated_values_ptr = ptrs->MallocUpdatedValuesPtr(
         current_iter, GetCudaAlignedSize(num_unique * line_size * sizeof(T)),
@@ -284,8 +285,9 @@ class SgdEmbeddingUpdateKernel final : public user_op::OpKernel {
     T* updated_unique_embeddings_ptr;
     GetUniqueValueAndUpdatedPtr<T>(ctx, current_iter_, &unique_embeddings_ptr,
                                    &updated_unique_embeddings_ptr);
-    embedding::NumUniques* num_uniques = Global<embedding::EmbeddingManager>::Get()->GetNumUniques(
-        ctx->Attr<std::string>("embedding_name"), ctx->parallel_ctx().parallel_id());
+    embedding::NumUniques* num_uniques =
+        Singleton<embedding::EmbeddingManager>::Get()->GetNumUniques(
+            ctx->Attr<std::string>("embedding_name"), ctx->parallel_ctx().parallel_id());
     uint32_t num_unique = num_uniques->GetNumUnique(current_iter_);
     int64_t grad_elem_cnt = num_unique * embedding_size;
     SGDUpdateKernel<T, G, IDX><<<BlocksNum4ThreadsNum(grad_elem_cnt), kCudaThreadsNumPerBlock, 0,

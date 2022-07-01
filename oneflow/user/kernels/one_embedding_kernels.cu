@@ -202,8 +202,8 @@ class EmbeddingKernelState final : public user_op::OpKernelState {
     num_uniques_ =
         Singleton<embedding::EmbeddingManager>::Get()->GetNumUniques(embedding_name_, parallel_id_);
     if (embedding::UseDynamicMemoryAllocation()) {
-      values_ptr_ =
-          Singleton<embedding::EmbeddingManager>::Get()->GetValuesPtr(embedding_name_, parallel_id_);
+      values_ptr_ = Singleton<embedding::EmbeddingManager>::Get()->GetValuesPtr(embedding_name_,
+                                                                                parallel_id_);
     } else {
       values_ptr_ = nullptr;
     }
@@ -273,19 +273,11 @@ class EmbeddingKernelState final : public user_op::OpKernelState {
 template<typename IDX>
 class EmbeddingPutKernelState final : public user_op::OpKernelState {
  public:
-<<<<<<< HEAD
   explicit EmbeddingPutKernelState(user_op::KernelInitContext* ctx) {
     const std::string& embedding_name = ctx->Attr<std::string>("embedding_name");
     const int64_t parallel_id = ctx->parallel_ctx().parallel_id();
-    key_value_store_ =
-        Singleton<embedding::EmbeddingManager>::Get()->GetKeyValueStore(embedding_name, parallel_id);
-=======
-  explicit EmbeddingPutKernelState(user_op::KernelInitContext* ctx) : device_index_(-1) {
-    OF_CUDA_CHECK(cudaGetDevice(&device_index_));
-    OF_CUDA_CHECK(cudaMallocHost(&host_num_keys_, sizeof(IDX)));
     key_value_store_ = Singleton<embedding::EmbeddingManager>::Get()->GetKeyValueStore(
-        ctx->Attr<std::string>("embedding_name"), ctx->parallel_ctx().parallel_id());
->>>>>>> fd59b161a78d191309594285ce87e853b4cf80f7
+        embedding_name, parallel_id);
     uint32_t max_query_length =
         ctx->TensorDesc4ArgNameAndIndex("unique_ids", 0)->shape().elem_cnt();
     key_value_store_->ReserveQueryLength(max_query_length);
@@ -846,8 +838,9 @@ class FusedSgdEmbeddingUpdatePutKernel final : public user_op::OpKernel {
     const user_op::Tensor* learning_rate = ctx->Tensor4ArgNameAndIndex("learning_rate", 0);
     const float* learning_rate_ptr = learning_rate->dptr<float>();
     const auto scale = ctx->Attr<double>("scale");
-    embedding::NumUniques* num_uniques = Singleton<embedding::EmbeddingManager>::Get()->GetNumUniques(
-        ctx->Attr<std::string>("embedding_name"), ctx->parallel_ctx().parallel_id());
+    embedding::NumUniques* num_uniques =
+        Singleton<embedding::EmbeddingManager>::Get()->GetNumUniques(
+            ctx->Attr<std::string>("embedding_name"), ctx->parallel_ctx().parallel_id());
     uint32_t num_unique = num_uniques->GetNumUnique(current_iter_);
     const void* unique_embeddings_ptr;
     if (embedding::UseDynamicMemoryAllocation()) {

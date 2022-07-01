@@ -282,7 +282,7 @@ class DataShuffleKernelState final : public user_op::OpKernelState {
     const std::string& embedding_name = ctx->Attr<std::string>("embedding_name");
     const int64_t parallel_id = ctx->parallel_ctx().parallel_id();
     num_uniques_ =
-        Global<embedding::EmbeddingManager>::Get()->GetNumUniques(embedding_name, parallel_id);
+        Singleton<embedding::EmbeddingManager>::Get()->GetNumUniques(embedding_name, parallel_id);
   }
   ~DataShuffleKernelState() {
     CudaCurrentDeviceGuard guard(device_index_);
@@ -1201,7 +1201,7 @@ class EmbeddingShuffleKernelDynamicMemoryAlloc final : public user_op::OpKernel 
     for (int64_t i = 0; i < parallel_num; ++i) {
       unique_partitioned_num_ids += host_num_unique_matrix[parallel_id * parallel_num + i];
     }
-    embedding::ValuesPtr* ptrs = Global<embedding::EmbeddingManager>::Get()->GetValuesPtr(
+    embedding::ValuesPtr* ptrs = Singleton<embedding::EmbeddingManager>::Get()->GetValuesPtr(
         ctx->Attr<std::string>("embedding_name"), ctx->parallel_ctx().parallel_id());
     void* cur_rank_embeddings_ptr = (ptrs->HasLookupEmbeddings())
                                         ? ptrs->GetLookupEmbeddingsPtr(current_iter_)
@@ -1823,7 +1823,7 @@ class EmbeddingGradientShuffleDynamicMemoryAllocKernel final : public user_op::O
     for (int64_t i = 0; i < parallel_num; ++i) {
       unique_partitioned_num_ids += host_num_unique_matrix[parallel_id * parallel_num + i];
     }
-    embedding::ValuesPtr* ptrs = Global<embedding::EmbeddingManager>::Get()->GetValuesPtr(
+    embedding::ValuesPtr* ptrs = Singleton<embedding::EmbeddingManager>::Get()->GetValuesPtr(
         ctx->Attr<std::string>("embedding_name"), ctx->parallel_ctx().parallel_id());
     if (!enable_quantized_comm) {
       // 1. sum to unique grad, from (num_ids, embedding_size) to (unique_partitioned_num_ids,
