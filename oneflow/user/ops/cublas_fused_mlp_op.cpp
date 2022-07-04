@@ -38,9 +38,9 @@ long AlignReluAuxLd(long aux_ld) {
 
 Maybe<void> InferTensorDesc4FusedMatmul(user_op::InferContext* ctx) {
   const user_op::TensorDesc& x_desc = ctx->InputTensorDesc("x", 0);
-  int32_t weight_num = ctx->input_size("weights");
-  int32_t bias_num = ctx->input_size("biases");
-  CHECK_EQ_OR_RETURN(weight_num, bias_num);
+  int32_t weight_size = ctx->input_size("weights");
+  int32_t bias_size = ctx->input_size("biases");
+  CHECK_EQ_OR_RETURN(weight_size, bias_size);
   /*
   A: (m, k)
   B: (n, k) need transpose
@@ -50,7 +50,7 @@ Maybe<void> InferTensorDesc4FusedMatmul(user_op::InferContext* ctx) {
   m = x_desc.shape().At(0);
   k = x_desc.shape().At(1);
 
-  for (int32_t idx = 0; idx < weight_num; idx++) {
+  for (int32_t idx = 0; idx < weight_size; idx++) {
     // skip first input weight.
     const user_op::TensorDesc& weight_desc = ctx->InputTensorDesc("weights", idx);
     const user_op::TensorDesc& bias_desc = ctx->InputTensorDesc("biases", idx);
@@ -157,13 +157,12 @@ REGISTER_USER_OP_GRAD("cublas_fused_mlp")
       std::string cublas_dy = last_bias_grad;
 
       if (ParseBooleanFromEnv("ONEFLOW_ONE_EMBEDDING_FUSED_MLP_ASYNC_GRAD", false)) {
-        printf("Here use fully fusedmlp grad \n");
         // Use Fully Fused MLP Backward.
         user_op::UserOpConfWrapperBuilder fused_mlp_grad_builder(op.op_name() + "_fused_mlp_grad");
         fused_mlp_grad_builder.Op("cublas_fused_mlp_grad")
             .Input("dy", cublas_dy)
             .Input("x", op.input("x", 0))
-            .Output("d_grad")
+            .Output("d_x")
             .Output("d_biases", weight_num)
             .Output("d_weights", weight_num);
 
@@ -187,7 +186,7 @@ REGISTER_USER_OP_GRAD("cublas_fused_mlp")
           }
         }
         if (op.NeedGenGradTensor4OpInput("x", 0)) {
-          op.BindGradTensorWithOpInput(fused_mlp_grad_op.output("d_grad", 0), "x", 0);
+          op.BindGradTensorWithOpInput(fused_mlp_grad_op.output("d_x", 0), "x", 0);
         }
       } else {
         // step2: use reduce_sum to get last layer's bias grad.
