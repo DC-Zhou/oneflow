@@ -38,9 +38,9 @@ long AlignReluAuxLd(long aux_ld) {
 
 Maybe<void> InferTensorDesc4FusedMatmul(user_op::InferContext* ctx) {
   const user_op::TensorDesc& x_desc = ctx->InputTensorDesc("x", 0);
-  int32_t weight_num = ctx->input_size("weights");
-  int32_t bias_num = ctx->input_size("biases");
-  CHECK_EQ_OR_RETURN(weight_num, bias_num);
+  int32_t weight_size = ctx->input_size("weights");
+  int32_t bias_size = ctx->input_size("biases");
+  CHECK_EQ_OR_RETURN(weight_size, bias_size);
   /*
   A: (m, k)
   B: (n, k) need transpose
@@ -50,7 +50,7 @@ Maybe<void> InferTensorDesc4FusedMatmul(user_op::InferContext* ctx) {
   m = x_desc.shape().At(0);
   k = x_desc.shape().At(1);
 
-  for (int32_t idx = 0; idx < weight_num; idx++) {
+  for (int32_t idx = 0; idx < weight_size; idx++) {
     // skip first input weight.
     const user_op::TensorDesc& weight_desc = ctx->InputTensorDesc("weights", idx);
     const user_op::TensorDesc& bias_desc = ctx->InputTensorDesc("biases", idx);

@@ -19,7 +19,6 @@ limitations under the License.
 #include "oneflow/core/ep/include/primitive/fill.h"
 #include "oneflow/core/device/nccl_util.h"
 #include "oneflow/core/job/eager_nccl_comm_manager.h"
-
 // CUBLAS_AUX_EPILOGUE only support in cuda11.4 or higher version, in cuda11.4 it need static link.
 #if CUDA_VERSION >= 11060
 
