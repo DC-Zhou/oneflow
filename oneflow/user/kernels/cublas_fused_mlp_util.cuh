@@ -28,7 +28,7 @@ namespace oneflow {
 namespace {
 
 constexpr int32_t kAuxReluLdAlignRequirement = 128;
-constexpr size_t kDefaultWorkspaceSize = 4 * 1024 * 1024;  // 4M
+constexpr size_t kDefaultWorkspaceSizeMb = 4;  // 4M
 
 long AlignReluAuxLd(long aux_ld) {
   /*
@@ -215,9 +215,12 @@ void SetCublasAttr(const CublasFusedMLPKernelCache* matmul_grad_cache,
       matmul_grad_cache->operation_desc, CUBLASLT_MATMUL_DESC_COMPUTE_TYPE, &cublas_compute_dtype,
       sizeof(cublas_compute_dtype)));
 
-  OF_CUBLAS_CHECK(cublasLtMatmulPreferenceSetAttribute(
-      matmul_grad_cache->cublas_preference, CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES,
-      &kDefaultWorkspaceSize, sizeof(kDefaultWorkspaceSize)));
+  size_t workspace_size =
+      ParseIntegerFromEnv("ONEFLOW_EP_CUDA_CUBLAS_WORKSPACE_SIZE_MB", kDefaultWorkspaceSizeMb)
+      * 1024 * 1024;
+  OF_CUBLAS_CHECK(cublasLtMatmulPreferenceSetAttribute(matmul_grad_cache->cublas_preference,
+                                                       CUBLASLT_MATMUL_PREF_MAX_WORKSPACE_BYTES,
+                                                       &workspace_size, sizeof(workspace_size)));
 
   uint32_t pointer_mode = CUBLASLT_POINTER_MODE_MASK_HOST;
   OF_CUBLAS_CHECK(cublasLtMatmulPreferenceSetAttribute(matmul_grad_cache->cublas_preference,

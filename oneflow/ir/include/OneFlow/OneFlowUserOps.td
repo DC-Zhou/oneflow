@@ -4591,11 +4591,9 @@ def OneFlow_CublasBiasAddReluMatmulGradOp : OneFlow_BaseOp<"cublas_bias_add_relu
     OneFlow_Tensor:$aux
   );
   let output = (outs
-    OneFlow_Tensor:$d_grad, 
-    OneFlow_Tensor:$d_bias
-  );
-  let attrs = (ins
-    DefaultValuedAttr<F64Attr, "1.">:$alpha
+    OneFlow_Tensor:$d_x, 
+    Variadic<OneFlow_Tensor>:$d_biases, 
+    Variadic<OneFlow_Tensor>:$d_weights
   );
   let has_logical_tensor_desc_infer_fn = 1;
   let has_physical_tensor_desc_infer_fn = 1;
