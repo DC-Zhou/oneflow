@@ -413,7 +413,6 @@ __global__ void FusedInitSliceCast(const int32_t elem_cnt, uint64_t seed,
             initializer_index[table_idx * line_size + col * pack_size + k];
         EmbeddingInitializer initializer = initializer_param[initializer_idx];
         T value;
-        // TODO:use curand_uniform4
         if (initializer.type == InitializerType::kUniform) {
           const float low = initializer.uniform_param.low;
           const float high = initializer.uniform_param.high;
@@ -470,13 +469,13 @@ void InitMissingAndSliceCast(cudaStream_t cuda_stream, uint32_t num_unique,
         line_num_pack, embedding_num_pack, initializer_param, initializer_index,
         reinterpret_cast<const U*>(table_ids), mask, reinterpret_cast<Pack<T, 4>*>(values_ptr),
         reinterpret_cast<Pack<V, 4>*>(embeddings_ptr));
-  } else if(pack_size == 2) {
+  } else if (pack_size == 2) {
     FusedInitSliceCast<T, U, V, 2><<<num_blocks, kCudaThreadsNumPerBlock, 0, cuda_stream>>>(
         value_elem_num_pack, seed, cuda_gen_state, inc_offset, line_size, embedding_size,
         line_num_pack, embedding_num_pack, initializer_param, initializer_index,
         reinterpret_cast<const U*>(table_ids), mask, reinterpret_cast<Pack<T, 2>*>(values_ptr),
         reinterpret_cast<Pack<V, 2>*>(embeddings_ptr));
-  } {
+  } else {
     FusedInitSliceCast<T, U, V, 1><<<num_blocks, kCudaThreadsNumPerBlock, 0, cuda_stream>>>(
         value_elem_num_pack, seed, cuda_gen_state, inc_offset, line_size, embedding_size,
         line_num_pack, embedding_num_pack, initializer_param, initializer_index,
