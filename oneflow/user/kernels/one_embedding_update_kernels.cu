@@ -249,7 +249,6 @@ class SgdEmbeddingUpdateKernel final : public user_op::OpKernel {
     const user_op::Tensor* embedding_grad = ctx->Tensor4ArgNameAndIndex("embedding_grad", 0);
     user_op::Tensor* updated_unique_embeddings =
         ctx->Tensor4ArgNameAndIndex("updated_unique_embeddings", 0);
-    CHECK_EQ(embedding_grad->shape_view().NumAxes(), 2);
     const int64_t line_size = ctx->Attr<int64_t>("line_size");
     const int64_t embedding_size = ctx->Attr<int64_t>("embedding_size");
     CHECK_EQ(line_size, embedding_size);
@@ -330,7 +329,6 @@ class MomentumEmbeddingUpdateKernel final : public user_op::OpKernel {
     const user_op::Tensor* embedding_grad = ctx->Tensor4ArgNameAndIndex("embedding_grad", 0);
     user_op::Tensor* updated_unique_embeddings =
         ctx->Tensor4ArgNameAndIndex("updated_unique_embeddings", 0);
-    CHECK_EQ(unique_embeddings->shape_view().NumAxes(), 2);
     CHECK_EQ(embedding_grad->shape_view().NumAxes(), 2);
     const int64_t num_keys = unique_embeddings->shape_view().At(0);
     const int64_t line_size = ctx->Attr<int64_t>("line_size");
@@ -408,7 +406,6 @@ class AdamEmbeddingUpdateKernel final : public user_op::OpKernel {
     const user_op::Tensor* embedding_grad = ctx->Tensor4ArgNameAndIndex("embedding_grad", 0);
     user_op::Tensor* updated_unique_embeddings =
         ctx->Tensor4ArgNameAndIndex("updated_unique_embeddings", 0);
-    CHECK_EQ(unique_embeddings->shape_view().NumAxes(), 2);
     CHECK_EQ(embedding_grad->shape_view().NumAxes(), 2);
     const int64_t num_keys = unique_embeddings->shape_view().At(0);
     const int64_t line_size = ctx->Attr<int64_t>("line_size");
@@ -497,7 +494,6 @@ class AdagradEmbeddingUpdateKernel final : public user_op::OpKernel {
     const user_op::Tensor* embedding_grad = ctx->Tensor4ArgNameAndIndex("embedding_grad", 0);
     user_op::Tensor* updated_unique_embeddings =
         ctx->Tensor4ArgNameAndIndex("updated_unique_embeddings", 0);
-    CHECK_EQ(unique_embeddings->shape_view().NumAxes(), 2);
     CHECK_EQ(embedding_grad->shape_view().NumAxes(), 2);
     const int64_t num_keys = unique_embeddings->shape_view().At(0);
     const int64_t line_size = ctx->Attr<int64_t>("line_size");
@@ -577,8 +573,6 @@ class FtrlEmbeddingUpdateKernel final : public user_op::OpKernel {
     const user_op::Tensor* embedding_grad = ctx->Tensor4ArgNameAndIndex("embedding_grad", 0);
     user_op::Tensor* updated_unique_embeddings =
         ctx->Tensor4ArgNameAndIndex("updated_unique_embeddings", 0);
-    CHECK_EQ(unique_embeddings->shape_view().NumAxes(), 2)
-        << "The NumAxes of unique_embedding should be equal to 2. ";
     CHECK_EQ(embedding_grad->shape_view().NumAxes(), 2)
         << "The NumAxes of embedding_grad should be equal to 2. ";
     const int64_t num_keys = unique_embeddings->shape_view().At(0);
